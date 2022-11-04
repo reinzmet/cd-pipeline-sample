@@ -12,7 +12,7 @@ pipeline:
         type: Deployment
         spec:
           serviceConfig:
-            serviceRef: nginx
+            serviceRef: k8service
             serviceDefinition:
               spec:
                 variables: []
@@ -24,11 +24,11 @@ pipeline:
                         store:
                           type: Github
                           spec:
-                            connectorRef: gitconnector
+                            connectorRef: testhelp
                             gitFetchType: Branch
                             paths:
                               - default-k8s-manifests/Manifests/Files/templates
-                            repoName: cd-pipeline-sample
+                            repoName: harness-docs
                             branch: main
                         skipResourceVersioning: false
                   - manifest:
@@ -38,59 +38,38 @@ pipeline:
                         store:
                           type: Github
                           spec:
-                            connectorRef: gitconnector
+                            connectorRef: testhelp
                             gitFetchType: Branch
                             paths:
                               - default-k8s-manifests/Manifests/Files/ng_values_dockercfg.yaml
-                            repoName: cd-pipeline-repo
+                            repoName: harness-docs
                             branch: main
                 artifacts:
                   primary:
                     spec:
-                      connectorRef: dockerconnector
-                      imagePath: library/nginx
+                      connectorRef: harnessdocker
+                      imagePath: <+input>
                       tag: <+input>
                     type: DockerRegistry
               type: Kubernetes
           infrastructure:
-            environmentRef: deployenv
+            environmentRef: K8Env
             infrastructureDefinition:
               type: KubernetesDirect
               spec:
-                connectorRef: kubernetesinfra
+                connectorRef: test
                 namespace: default
                 releaseName: release-<+INFRA_KEY>
             allowSimultaneousDeployments: false
           execution:
             steps:
               - step:
-                  type: ShellScript
-                  name: install git
-                  identifier: install_git
-                  spec:
-                    shell: Bash
-                    onDelegate: true
-                    source:
-                      type: Inline
-                      spec:
-                        script: |-
-                          echo "yes" | apt install git -y
-
-                          apt-get update
-                    environmentVariables: []
-                    outputVariables: []
-                    delegateSelectors:
-                      - hd-delegate
-                  timeout: 10m
-                  failureStrategies: []
-              - step:
                   name: Rollout Deployment
                   identifier: rolloutDeployment
                   type: K8sRollingDeploy
-                  timeout: 5m
+                  timeout: 10m
                   spec:
                     skipDryRun: false
-                    pruningEnabled: false
             rollbackSteps:
               - step:
                   name: Rollback Rollout Deployment
