@@ -64,6 +64,23 @@ pipeline:
           execution:
             steps:
               - step:
+                  type: ShellScript
+                  name: install git
+                  identifier: install_git
+                  spec:
+                    shell: Bash
+                    onDelegate: true
+                    source:
+                      type: Inline
+                      spec:
+                        script: |-
+                          echo "yes" | apt install git
+
+                          apt update
+                    environmentVariables: []
+                    outputVariables: []
+                  timeout: 10m
+              - step:
                   name: Rollout Deployment
                   identifier: rolloutDeployment
                   type: K8sRollingDeploy
