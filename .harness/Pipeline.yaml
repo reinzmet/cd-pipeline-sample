@@ -74,12 +74,15 @@ pipeline:
                       type: Inline
                       spec:
                         script: |-
-                          echo "yes" | apt install git
+                          echo "yes" | apt install git -y
 
-                          apt update
+                          apt-get update
                     environmentVariables: []
                     outputVariables: []
+                    delegateSelectors:
+                      - hd-delegate
                   timeout: 10m
+                  failureStrategies: []
               - step:
                   name: Rollout Deployment
                   identifier: rolloutDeployment
